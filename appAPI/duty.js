@@ -1,6 +1,9 @@
 const Router = require('koa-router')
 const mongoose = require('mongoose')
 let router = new Router()
+// const secret = Date.now().toString()//添加签名
+const secret=require('../token/secret')
+const jwtAuth = require('koa-jwt')//验证token
 // 获取产业
 router.get('/getDuty', async (ctx) => {
     let item = ctx.query.key
@@ -36,7 +39,7 @@ router.get('/getDutyH5', async (ctx) => {
     }
 })
 //添加产业
-router.post('/setDuty', async (ctx) => {
+router.post('/setDuty', jwtAuth({ secret }), async (ctx) => {
     let { title, content } = ctx.request.body
     const dutylist = mongoose.model("Duty")
     let dutyItem = new dutylist({ title: title, content: content })
@@ -52,10 +55,9 @@ router.post('/setDuty', async (ctx) => {
         }
     })
 })
-//修改
-router.post('/updateDuty', async (ctx) => {
+//修改产业
+router.post('/updateDuty', jwtAuth({ secret }), async (ctx) => {
     let { id, title, content } = ctx.request.body
-
     const dutylist = mongoose.model("Duty")
     await dutylist.where({ _id: id }).updateOne({ title: title, content: content }).then(() => {
         ctx.body = {
@@ -70,10 +72,9 @@ router.post('/updateDuty', async (ctx) => {
     })
 
 })
-//删除
-router.post('/removeDuty', async (ctx) => {
+//删除产业
+router.post('/removeDuty', jwtAuth({ secret }), async (ctx) => {
     let { id } = ctx.request.body
-    // console.log(id)
     const dutylist = mongoose.model("Duty")
     await dutylist.remove({ _id: id }).then(() => {
         ctx.body = {

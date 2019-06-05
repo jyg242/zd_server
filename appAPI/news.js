@@ -1,7 +1,9 @@
 const Router = require('koa-router')
 const mongoose = require('mongoose')
 let router = new Router()
-const proving = require('../token/proving');//验证token
+// const secret = Date.now().toString()//添加签名
+const secret=require('../token/secret')
+const jwtAuth = require('koa-jwt')//验证token
 // 获取新闻
 router.get('/getNews', async (ctx) => {
     let item = ctx.query.key //查询类型
@@ -34,9 +36,9 @@ router.get('/getNews', async (ctx) => {
     } else if (item == 4) { //手机端新闻列表查询
         let pageNum = 8 //每页条数
         let total = (start - 1) * pageNum
-        console.log('执行' + total)
+        // console.log('执行' + total)
         let findBanner = await newslist.find({}, ['TITLE', 'createAt', 'IMG_MIN', 'INTRO', 'TYPE'], { sort: { createAt: -1 } }).skip(total).limit(pageNum)
-        console.log(total, findBanner)
+        // console.log(total, findBanner)
         if (findBanner) {
             ctx.body = {
                 status: 200,
@@ -67,7 +69,7 @@ router.get('/getNews_one', async (ctx) => {
     }
 })
 //添加新闻
-router.post('/setNews', async (ctx) => {
+router.post('/setNews', jwtAuth({ secret }),async (ctx) => {
     let { type, title, content, auth, from, intro, img_min } = ctx.request.body
     let createAt = Date.now()
     const newslist = mongoose.model("News")
@@ -85,7 +87,7 @@ router.post('/setNews', async (ctx) => {
     })
 })
 //修改新闻
-router.post('/updateNews', async (ctx) => {
+router.post('/updateNews',jwtAuth({ secret }), async (ctx) => {
     let { id, title, type, auth, content, intro, img } = ctx.request.body
     const newslist = mongoose.model("News")
     await newslist.where({ _id: id }).updateOne({ TITLE: title, TYPE: type, AUTH: auth, CONTENT: content, IMG_MIN: img, INTRO: intro }).then(() => {
@@ -101,10 +103,9 @@ router.post('/updateNews', async (ctx) => {
     })
 
 })
-//删除
-router.post('/removeNews', async (ctx) => {
+//删除新闻
+router.post('/removeNews', jwtAuth({ secret }),async (ctx) => {
     let { id } = ctx.request.body
-    // console.log(id)
     const newslist = mongoose.model("News")
     await newslist.remove({ _id: id }).then(() => {
         ctx.body = {
