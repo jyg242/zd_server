@@ -22,7 +22,7 @@
     "koa-static": "^5.0.0",
     "koa2-cors": "^2.0.6",
     "mongoose": "^5.5.4",
-    "redis": "^2.8.0",
+    "redis": "^3.1.1",
     "trek-captcha": "^0.4.0"
   },
   "devDependencies": {}
